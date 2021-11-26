@@ -2,7 +2,7 @@ from flask import Flask, jsonify
 import mysql.connector
 import pandas
 
-mydb = mysql.connector.connect(user='root', password='Blue2007!',
+mydb = mysql.connector.connect(user='root', password='password',
                                host='localhost',
                                database='Talon540')
 
