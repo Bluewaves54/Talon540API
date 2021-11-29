@@ -2,7 +2,7 @@ from flask import Flask, jsonify
 import mysql.connector
 import pandas
 
-mydb = mysql.connector.connect(user='root', password='password',
+mydb = mysql.connector.connect(user='root', password='Blue2007!',
                                host='localhost',
                                database='Talon540')
 
@@ -13,17 +13,24 @@ app = Flask(__name__)
 db = list()
 
 
-@app.before_request
-def before():
-    print("This is executed BEFORE each request.")
+@app.route('/deleteAccount/<string:deviceID>')
+def deleteAccount(deviceID):
+    query = f"delete from accounts where deviceID = '{deviceID}'"
+    cur.execute(query)
+    mydb.commit()
+    query2 = 'select * from accounts'
+    cur.execute(query2)
+    res = cur.fetchall()
+    print('database after deleting account: ', res)
+    return {'success': True}
 
 
-@app.route('/<string:deviceID>')
+@app.route('/verifyDeviceID/<string:deviceID>')
 def verifyDeviceID(deviceID):
     query = f"select * from Accounts where deviceID = '{deviceID}';"
     cur.execute(query)
     res = cur.fetchall()
-    print(res)
+    print('account:', res)
     if [deviceID == i[0] for i in res]:
         print('success')
         return {'output': True}
@@ -41,8 +48,11 @@ def storeInfo(subgroup, status, gradYear, deviceID):
 
     query = f"insert into Accounts(deviceID, subgroup, status, gradYear) " \
             f"values('{deviceID}', '{subgroup}', '{status}', {gradYear})"
-    cur.execute(query)
-    mydb.commit()
+    try:
+        cur.execute(query)
+        mydb.commit()
+    except:
+        return {'value': False}
 
     if deviceID == '' or subgroup == '' or status == '' or gradYear == '':
         return {'value': False}
