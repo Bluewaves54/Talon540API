@@ -2,7 +2,7 @@ from flask import Flask, jsonify
 import mysql.connector
 import pandas
 
-mydb = mysql.connector.connect(user='root', password='password',
+mydb = mysql.connector.connect(user='root', password='Blue2007!',
                                host='localhost',
                                database='Talon540')
 
@@ -11,6 +11,19 @@ cur = mydb.cursor()
 app = Flask(__name__)
 
 db = list()
+
+current_name = None
+
+
+@app.route('/addName/<string:name>')
+def addName(name):
+    global current_name
+    current_name = name
+    print(current_name)
+    if name == '':
+        return {'output': False}
+    else:
+        return {'output': True}
 
 
 @app.route('/deleteAccount/<string:deviceID>')
@@ -25,29 +38,43 @@ def deleteAccount(deviceID):
     return {'success': True}
 
 
-@app.route('/verifyDeviceID/<string:deviceID>')
-def verifyDeviceID(deviceID):
+@app.route('/fetchInformation/<string:deviceID>')
+def fetchInformation(deviceID):
     query = f"select * from Accounts where deviceID = '{deviceID}';"
     cur.execute(query)
     res = cur.fetchall()
     print('account:', res)
-    if [deviceID == i[0] for i in res]:
+    if len(res) != 0:
         print('success')
-        return {'output': True}
+        return {'deviceID': res[0][0],
+                'name': res[0][1],
+                'subgroup': res[0][2],
+                'status': res[0][3],
+                'gradYear': res[0][4]}
     else:
         print('fail')
         return {'output': False}
 
 
+@app.route('/fetchUsername/<string:deviceID>')
+def fetchUsername(deviceID):
+    query = f"select * from Accounts where deviceID = '{deviceID}'"
+    print('fetching username')
+    cur.execute(query)
+    res = cur.fetchall()
+    print(res)
+    if [deviceID == i[0] for i in res]:
+        print(res[0][1])
+        return {'name': res[0][1]}
+    else:
+        return {'name': False}
+
+
 @app.route('/<string:subgroup>/<string:status>/<string:gradYear>/<string:deviceID>')
 def storeInfo(subgroup, status, gradYear, deviceID):
-    gradYear = str(gradYear)
-    for charIndex in range(len(gradYear)):
-        if gradYear[charIndex] == 'o':
-            gradYear[charIndex] = 0
-
-    query = f"insert into Accounts(deviceID, subgroup, status, gradYear) " \
-            f"values('{deviceID}', '{subgroup}', '{status}', {gradYear})"
+    print(current_name)
+    query = f"insert into Accounts(deviceID, name, subgroup, status, gradYear) " \
+            f"values('{deviceID}', '{current_name}', '{subgroup}', '{status}', {gradYear})"
     try:
         cur.execute(query)
         mydb.commit()
