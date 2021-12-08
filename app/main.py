@@ -85,7 +85,3 @@ def storeInfo(subgroup, status, gradYear, deviceID):
         return {'value': False}
     else:
         return {'value': True}
-
-
-if __name__ == '__main__':
-    app.run()
